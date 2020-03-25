@@ -189,7 +189,7 @@ While its possible to crack a simple `md5` hash as follows, there are
 many other more efficient tools:
 
 ```
-$ odd-crack 'md5($p)' ../../wordlists/rockyou.txt  482c811da5d5b4bc6d497ffa98491e38
+$ odd-crack 'md5($p)' rockyou.txt  482c811da5d5b4bc6d497ffa98491e38
 [*] loading file...
 [*] found password123=482c811da5d5b4bc6d497ffa98491e38
 [*] all hashes found, shutdown requested
@@ -197,7 +197,7 @@ $ odd-crack 'md5($p)' ../../wordlists/rockyou.txt  482c811da5d5b4bc6d497ffa98491
 ```
 
 ```
-$ odd-crack 'keccak_256(keccak_256_raw($p))' ../../wordlists/rockyou.txt 7e7471197b18c087ce6fd7abdcd1991481eb650e39cb0eeafc82cfb7186c0cfe
+$ odd-crack 'keccak_256(keccak_256_raw($p))' rockyou.txt 7e7471197b18c087ce6fd7abdcd1991481eb650e39cb0eeafc82cfb7186c0cfe
 [*] loading file...
 [*] found password123=7e7471197b18c087ce6fd7abdcd1991481eb650e39cb0eeafc82cfb7186c0cfe
 [*] all hashes found, shutdown requested
