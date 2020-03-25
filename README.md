@@ -74,7 +74,13 @@ Two tools are provided:
 
 ### Install
 
-Follows standard python package:
+From [pypi.org][pypi]:
+
+```
+pip3 install oddhash
+```
+
+From source:
 
 ```
 pip3 install -r requirements.txt
@@ -202,11 +208,12 @@ $ odd-crack 'keccak_256(keccak_256_raw($p))' rockyou.txt 7e7471197b18c087ce6fd7a
 [*] found password123=7e7471197b18c087ce6fd7abdcd1991481eb650e39cb0eeafc82cfb7186c0cfe
 [*] all hashes found, shutdown requested
 [*] done, tried 1384 passwords
-
 ```
 
 
 # Other bits
+
+Source code can be found on [GitHub][oddhash].
 
 Copyright (C) 2020 Karim Kanso. All Rights Reserved. Project licensed under GPLv3.
 
@@ -215,3 +222,5 @@ Copyright (C) 2020 Karim Kanso. All Rights Reserved. Project licensed under GPLv
 [hashcat]: https://hashcat.net/hashcat/ "hashcat: advanced password recovery"
 [john-dynamic]: https://github.com/magnumripper/JohnTheRipper/blob/bleeding-jumbo/doc/DYNAMIC "GitHub.com: John the Ripper Dynamic Mode Documentation"
 [pycryptodome-hash]: https://pycryptodome.readthedocs.io/en/latest/src/hash/hash.html "pycryptodome.readthedocs.io: Crypto.Hash package documentation"
+[oddhash]: https://github.com/kazkansouh/odd-hash "GitHub.com: odd-hash"
+[pypi]: https://pypi.org/project/oddhash/ "PyPI: oddhash"
