@@ -20,7 +20,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="oddhash",
-    version="0.0.1",
+    version="0.0.2",
     author="Karim Kanso",
     author_email="kaz.kanso@gmail.com",
     description="Tool to hash odd format passwords.",
