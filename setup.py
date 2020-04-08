@@ -14,13 +14,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import setuptools
+import ast
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+with open("oddhash/__init__.py", "r") as f:
+    for line in f.readlines():
+        if line.startswith('name ='):
+            name = ast.literal_eval(line.split("=",1)[1].strip())
+        if line.startswith('version ='):
+            version = ast.literal_eval(line.split("=",1)[1].strip())
+
 setuptools.setup(
-    name="oddhash",
-    version="0.0.2",
+    name=name,
+    version=version,
     author="Karim Kanso",
     author_email="kaz.kanso@gmail.com",
     description="Tool to hash odd format passwords.",
