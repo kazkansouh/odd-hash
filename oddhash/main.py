@@ -19,11 +19,15 @@ def main():
     https://pycryptodome.readthedocs.io/en/latest/src/hash/hash.html
 
     Currently it is not possible to use this tool for any of the
-    algorithms that use a different interface, such as HMAC or either
-    of the SHAKEs. Compare the usage of either of these with MD5 on
-    the above link.
+    algorithms that use a different interface, such either of the
+    SHAKEs or the MAC algorithms (with the exception of HMAC). To
+    better understand, compare the usage of these with MD5 on the
+    above link.
 
-    '''),
+    Parameters such as salt and message can be specified with a prefix
+    of: {}.
+
+    '''.format(', '.join(oddhash.codings()))),
     epilog='''
     {} v{}.
     Copyright (C) 2020 Karim Kanso. All Rights Reserved.
@@ -33,7 +37,7 @@ def main():
         'format',
         help=textwrap.dedent('''
 
-        hash format specification, e.g. "md5($p)" or something much
+        Hash format specification, e.g. "md5($p)" or something much
         more complex such as
         "sha3_384(md5($s).keccak_512(blake2b_224($p)))".
 
@@ -43,6 +47,14 @@ def main():
         will hash the resulting 32 bytes of the first hash (instead of
         turning them into hex first, i.e. 64 chars).
 
+        It is possible to prefix algorithm names with "hmac_". This
+        will use the password value as the secret and value passed in
+        between the parameters as the message. E.g. "hmac_sha256($m)"
+        or even "sha256(hmac_md5($s.sha1($p)))" is possible. Be aware
+        that not all possible combinations of hmac and digest
+        algorithms are supported, this is especially true of sponge
+        based algorithms (e.g. sha3, keccak, blake2b).
+
         The following is a list of hash functions available from the
         installed version of pycryptodome: {}
 
@@ -50,18 +62,25 @@ def main():
     )
     parser.add_argument(
         '--salt',
-        type=lambda x: x.encode('utf-8'),
-        help='if needed, specify a salt value'
+        type=oddhash.toBytes,
+        metavar="S",
+        help='If needed, specify a salt value: $s'
+    )
+    parser.add_argument(
+        '--message',
+        type=oddhash.toBytes,
+        metavar="M",
+        help='If needed, specify a message value: $m'
     )
     parser.add_argument(
         'password',
-        type=lambda x: x.encode('utf-8'),
-        help='the password to hash'
+        type=oddhash.toBytes,
+        help='The password to hash'
     )
     parser.add_argument(
         '--debug',
         action='store_true',
-        help='increase verbosity of print messages'
+        help='Increase verbosity of print messages'
     )
 
     args = parser.parse_args()
@@ -77,7 +96,7 @@ def main():
         print(tree.pretty())
 
     try:
-        func = oddhash.HashBuilder(args.salt).transform(tree)
+        func = oddhash.HashBuilder(args.salt, args.message).transform(tree)
     except Exception as e:
         print('[E] unable compile hash function:\n{}'.format(e))
         return

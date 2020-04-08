@@ -14,11 +14,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 name = "oddhash"
-version = "0.0.2"
+version = "0.0.3"
 
 from lark import Lark, Transformer
 import Crypto.Hash
+import Crypto.Hash.HMAC
 import pkgutil
+import re
+import binascii
+import base64
 
 debug = False
 
@@ -27,17 +31,20 @@ __grammar = '''
 
 function: algorithm [ "_" RAW ] "(" concat ")"
 
-algorithm: ALG_NAME [ "_" DIGEST_SIZE ]
+algorithm: [ HMAC "_" ] ALG_NAME [ "_" DIGEST_SIZE ]
 
 ?concat:  param ("." param)?
 
 ?param: function
       | SALT
       | PASSWORD
+      | MESSAGE
 
 SALT: "$s"
 PASSWORD: "$p"
+MESSAGE: "$m"
 
+HMAC: "hmac"
 RAW: "raw"
 DIGEST_SIZE: ("0".."9")+
 ALG_NAME: ("a".."z"|"A".."Z"|"0".."9")+
@@ -103,45 +110,74 @@ compilation.
         if len(l) == 1:
             return l[0]
 
-    def __init__(self, salt=None):
+    def __init__(self, salt=None, message=None):
         if salt and type(salt) != bytes:
             raise TypeError('salt should be bytes')
         self.salt = salt
+        if message and type(message) != bytes:
+            raise TypeError('message should be bytes')
+        self.message = message
 
         self.__algorithms = algorithms()
 
     def function(self, items):
         f = items.pop(0)
+
+        if not 'pwd' in f.__code__.co_varnames:
+            if items[0] == "raw":
+                g = lambda data, f=f: f(data).digest()
+                items.pop(0)
+            else:
+                g = lambda data, f=f: f(data).hexdigest().encode('utf-8')
+            param = items.pop(0)
+            if type(param) == bytes:
+                return g(param)
+            return lambda pwd, g=g, param=param: g(param(pwd))
+
+        # computation of f is blocked on needing password
         if items[0] == "raw":
-            g = lambda data, f=f: f(data).digest()
+            g = lambda data, pwd, f=f: f(data, pwd).digest()
             items.pop(0)
         else:
-            g = lambda data, f=f: f(data).hexdigest().encode('utf-8')
+            g = lambda data, pwd, f=f: f(data, pwd).hexdigest().encode('utf-8')
         param = items.pop(0)
         if type(param) == bytes:
-            return g(param)
-        return lambda data, g=g: g(param(data))
+            return lambda pwd, g=g, param=param: g(param, pwd)
+        return lambda pwd, g=g, param=param: g(param(pwd), pwd)
 
     def PASSWORD(self, item):
-        return lambda x: x
+        return lambda pwd: pwd
 
     def SALT(self, item):
         if not self.salt:
             raise ValueError('salt required but not specified')
         return self.salt
 
+    def MESSAGE(self, item):
+        if not self.message:
+            raise ValueError('message required but not specified')
+        return self.message
+
     def concat(self, items):
         a1, a2 = items
         if type(a1) == bytes and type(a2) == bytes:
             return a1 + a2
         if type(a1) == bytes:
-            return lambda data, a1=a1, a2=a2: a1 + a2(data)
+            return lambda pwd, a1=a1, a2=a2: a1 + a2(pwd)
         if type(a2) == bytes:
-            return lambda data, a1=a1, a2=a2: a1(data) + a2
-        return lambda data, a1=a1, a2=a2: a1(data) + a2(data)
+            return lambda pwd, a1=a1, a2=a2: a1(pwd) + a2
+        return lambda pwd, a1=a1, a2=a2: a1(pwd) + a2(pwd)
+
 
     def algorithm(self, items):
         name = items.pop(0)
+        hmac = False
+        if name == "hmac":
+           name = items.pop(0)
+           hmac = True
+           if debug:
+               print("[*] using hmac")
+
         if debug:
             print("[*] looking up: {}".format(name))
 
@@ -162,19 +198,30 @@ compilation.
                 print('[E] algorithm not found: {}'.format(name))
             raise AlgorithmNotFoundError(name, items)
 
-        if items:
-            def h(data, f=m.new, s=int(items[0])):
-                h = f(digest_bits=s)
+        if hmac:
+            # not possible to pass digest size as parameter
+            def h(data, pwd, m=m):
+                h = Crypto.Hash.HMAC.new(key=pwd, digestmod=m)
                 h.update(data)
                 return h
         else:
-            def h(data, f=m.new):
-                h = f()
-                h.update(data)
-                return h
+            if items:
+                def h(data, f=m.new, s=int(items[0])):
+                    h = f(digest_bits=s)
+                    h.update(data)
+                    return h
+            else:
+                def h(data, f=m.new):
+                    h = f()
+                    h.update(data)
+                    return h
 
+        # just check during compile that hash function works
         try:
-            h(b'test')
+            if 'pwd' in h.__code__.co_varnames:
+                h(b'data', b'pwd')
+            else:
+                h(b'data')
         except Exception as e:
             if debug:
                 print(
@@ -184,3 +231,26 @@ compilation.
                 )
             raise AlgorithmTestError(name, items, e)
         return h
+
+
+# below are a list of various encodings that are used for input of
+# strings from user
+
+__codings = {
+    'hex'           : binascii.unhexlify,
+    'base64'        : base64.b64decode,
+    'base64urlsafe' : base64.urlsafe_b64decode,
+    'utf8'          : lambda x: x.encode('utf8')
+}
+
+def codings():
+    return [x for x in __codings]
+
+__regex = re.compile('^(?:(' + '|'.join(codings()) + '):)?(.*)$')
+
+def toBytes(s, default='utf8'):
+    '''Parse strings that are in the form ^[(hex|base64|base64safe|utf8):].*$
+If the prefix is omitted, then the string is iterpreted as ascii.'''
+
+    g = __regex.match(s).groups()
+    return __codings[g[0] if g[0] else default](g[1])
