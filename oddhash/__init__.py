@@ -20,9 +20,6 @@ from lark import Lark, Transformer
 import Crypto.Hash
 import Crypto.Hash.HMAC
 import pkgutil
-import re
-import binascii
-import base64
 
 debug = False
 
@@ -231,26 +228,3 @@ compilation.
                 )
             raise AlgorithmTestError(name, items, e)
         return h
-
-
-# below are a list of various encodings that are used for input of
-# strings from user
-
-__codings = {
-    'hex'           : binascii.unhexlify,
-    'base64'        : base64.b64decode,
-    'base64urlsafe' : base64.urlsafe_b64decode,
-    'utf8'          : lambda x: x.encode('utf8')
-}
-
-def codings():
-    return [x for x in __codings]
-
-__regex = re.compile('^(?:(' + '|'.join(codings()) + '):)?(.*)$')
-
-def toBytes(s, default='utf8'):
-    '''Parse strings that are in the form ^[(hex|base64|base64safe|utf8):].*$
-If the prefix is omitted, then the string is iterpreted as ascii.'''
-
-    g = __regex.match(s).groups()
-    return __codings[g[0] if g[0] else default](g[1])

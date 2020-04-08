@@ -104,46 +104,62 @@ python3 setup.py install
 $ odd-hash -h
 usage: odd-hash [-h] [--salt S] [--message M] [--debug] format password
 
-Configurable password hasher. It is designed to be easy to generate different
-format hashes using a standard hash specification similar to what is often
-shown in PHP. Selection of supported hash algorithms depends on what is
-available in the installed version of pycryptodome. See following link for
-more details: https://pycryptodome.readthedocs.io/en/latest/src/hash/hash.html
-Currently it is not possible to use this tool for any of the algorithms that
+  Configurable password hasher. It is designed to be easy to generate
+different format hashes using a standard hash specification similar to what is
+often shown in PHP.
+
+  Selection of supported hash algorithms depends on what is available in the
+installed version of pycryptodome. See following link for more details:
+
+  https://pycryptodome.readthedocs.io/en/latest/src/hash/hash.html
+
+  Currently it is not possible to use this tool for any of the algorithms that
 use a different interface, such either of the SHAKEs or the MAC algorithms
 (with the exception of HMAC). To better understand, compare the usage of these
-with MD5 on the above link. Parameters such as salt and message can be
-specified with a prefix of: hex, base64, base64urlsafe, utf8.
+with MD5 on the above link.
+
+  Parameters such as salt and message can be specified with a prefix of: hex,
+base64, base64urlsafe, utf8.
 
 positional arguments:
   format       Hash format specification, e.g. "md5($p)" or something much
                more complex such as
-               "sha3_384(md5($s).keccak_512(blake2b_224($p)))". Any of the
-               algorithm names can be given the suffix with "_raw", which does
-               not convert the resulting hash back into base16 before the next
-               hash. E.g. "sha256(sha256_raw($p))" will hash the resulting 32
-               bytes of the first hash (instead of turning them into hex
-               first, i.e. 64 chars). It is possible to prefix algorithm names
-               with "hmac_". This will use the password value as the secret
-               and value passed in between the parameters as the message. E.g.
-               "hmac_sha256($m)" or even "sha256(hmac_md5($s.sha1($p)))" is
-               possible. Be aware that not all possible combinations of hmac
-               and digest algorithms are supported, this is especially true of
-               sponge based algorithms (e.g. sha3, keccak, blake2b). The
-               following is a list of hash functions available from the
+               "sha3_384(md5($s).keccak_512(blake2b_224($p)))".
+
+               Any of the algorithm names can be given the suffix with "_raw",
+               which does not convert the resulting hash back into base16
+               before the next hash. E.g. "sha256(sha256_raw($p))" will hash
+               the resulting 32 bytes of the first hash (instead of turning
+               them into hex first, i.e. 64 chars).
+
+               It is possible to prefix algorithm names with "hmac_". This
+               will use the password value as the secret and value passed in
+               between the parameters as the message. E.g. "hmac_sha256($m)"
+               or even "sha256(hmac_md5($s.sha1($p)))" is possible. Be aware
+               that not all possible combinations of hmac and digest
+               algorithms are supported, this is especially true of sponge
+               based algorithms (e.g. sha3, keccak, blake2b).
+
+               The following is a list of hash functions available from the
                installed version of pycryptodome: BLAKE2b, BLAKE2s, CMAC,
                HMAC, MD2, MD4, MD5, Poly1305, RIPEMD, RIPEMD160, SHA, SHA1,
                SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512,
-               SHA512, SHAKE128, SHAKE256, keccak
+               SHA512, SHAKE128, SHAKE256, keccak.
+
   password     The password to hash
+
 
 optional arguments:
   -h, --help   show this help message and exit
+
   --salt S     If needed, specify a salt value: $s
+
   --message M  If needed, specify a message value: $m
+
   --debug      Increase verbosity of print messages
 
-oddhash v0.0.3. Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+
+  oddhash v0.0.3. Copyright (C) 2020 Karim Kanso. All Rights Reserved.
 ```
 
 ### `odd-hash` examples
@@ -185,51 +201,69 @@ $ odd-hash 'hmac_sha256($m)' --message 'gjdkdkic894m' 'password123'
 usage: odd-crack [-h] [--salt S] [--message M] [--debug]
                 format wordlist HASH [HASH ...]
 
-Configurable password hash cracker. It is designed to be easy to specify
+  Configurable password hash cracker. It is designed to be easy to specify
 different format hashes, however it is not designed to be fast. The tool was
 created as often serious password crackers (e.g. john or hashcat) can be time
-consuming to use a format that is not pre-configured. Selection of supported
-hash algorithms depends on what is available in the installed version of
-pycryptodome. See following link for more details:
-https://pycryptodome.readthedocs.io/en/latest/src/hash/hash.html Currently it
-is not possible to use this tool for any of the algorithms that use a
-different interface, such either of the SHAKEs or the MAC algorithms (with the
-exception of HMAC). To better understand, compare the usage of these with MD5
-on the above link. Parameters such as salt, message and hashes can be
-specified with a prefix of: hex, base64, base64urlsafe, utf8.
+consuming to use a format that is not pre-configured.
+
+  Selection of supported hash algorithms depends on what is available in the
+installed version of pycryptodome. See following link for more details:
+
+  https://pycryptodome.readthedocs.io/en/latest/src/hash/hash.html
+
+  Currently it is not possible to use this tool for any of the algorithms that
+use a different interface, such either of the SHAKEs or the MAC algorithms
+(with the exception of HMAC). To better understand, compare the usage of these
+with MD5 on the above link.
+
+  Parameters such as salt, message and hashes can be specified with a prefix
+of: hex, base64, base64urlsafe, utf8.
 
 positional arguments:
   format       Hash format specification, e.g. "md5($p)" or something much
                more complex such as
-               "sha3_384(md5($s).keccak_512(blake2b_224($p)))". Any of the
-               algorithm names can be given the suffix with "_raw", which does
-               not convert the resulting hash back into base16 before the next
-               hash. E.g. "sha256(sha256_raw($p))" will hash the resulting 32
-               bytes of the first hash (instead of turning them into hex
-               first, i.e. 64 chars). It is possible to prefix algorithm names
-               with "hmac_". This will use the password value as the secret
-               and value passed in between the parameters as the message. E.g.
-               "hmac_sha256($m)" or even "sha256(hmac_md5($s.sha1($p)))" is
-               possible. Be aware that not all possible combinations of hmac
-               and digest algorithms are supported, this is especially true of
-               sponge based algorithms (e.g. sha3, keccak, blake2b). The
-               following is a list of hash functions available from the
+               "sha3_384(md5($s).keccak_512(blake2b_224($p)))".
+
+               Any of the algorithm names can be given the suffix with "_raw",
+               which does not convert the resulting hash back into base16
+               before the next hash. E.g. "sha256(sha256_raw($p))" will hash
+               the resulting 32 bytes of the first hash (instead of turning
+               them into hex first, i.e. 64 chars).
+
+               It is possible to prefix algorithm names with "hmac_". This
+               will use the password value as the secret and value passed in
+               between the parameters as the message. E.g. "hmac_sha256($m)"
+               or even "sha256(hmac_md5($s.sha1($p)))" is possible. Be aware
+               that not all possible combinations of hmac and digest
+               algorithms are supported, this is especially true of sponge
+               based algorithms (e.g. sha3, keccak, blake2b).
+
+               The following is a list of hash functions available from the
                installed version of pycryptodome: BLAKE2b, BLAKE2s, CMAC,
                HMAC, MD2, MD4, MD5, Poly1305, RIPEMD, RIPEMD160, SHA, SHA1,
                SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512,
-               SHA512, SHAKE128, SHAKE256, keccak
+               SHA512, SHAKE128, SHAKE256, keccak.
+
   wordlist     Wordlist to use for cracking
+
   HASH         List of base16 (i.e. hex) hashes to attempt to crack. Caution,
-               no validation is performed on the length. If a hash begins with
-               "@" then it will be treated as a file and hashes read from it.
+               no validation is performed on the length.
+
+               If a hash begins with "@" then it will be treated as a file and
+               hashes read from it.
+
 
 optional arguments:
   -h, --help   show this help message and exit
+
   --salt S     If needed, specify a salt value: $s
+
   --message M  If needed, specify a message value: $m
+
   --debug      Increase verbosity of print messages
 
-oddhash v0.0.3. Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+
+  oddhash v0.0.3. Copyright (C) 2020 Karim Kanso. All Rights Reserved.
 ```
 
 ### `odd-crack` examples

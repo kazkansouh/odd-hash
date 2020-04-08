@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import oddhash
+import oddhash.args as A
 import sys
 import argparse
 import textwrap
@@ -59,12 +60,13 @@ def main():
     Parameters such as salt, message and hashes can be specified
     with a prefix of: {}.
 
-    '''.format(', '.join(oddhash.codings()))),
+    '''.format(', '.join(A.codings()))),
     epilog='''
     {} v{}.
     Copyright (C) 2020 Karim Kanso. All Rights Reserved.
     '''.format(oddhash.name, oddhash.version),
     fromfile_prefix_chars='@',
+    formatter_class=A.OddHashHelpFormatter,
     )
     parser.add_argument(
         'format',
@@ -89,20 +91,20 @@ def main():
         based algorithms (e.g. sha3, keccak, blake2b).
 
         The following is a list of hash functions available from the
-        installed version of pycryptodome: {}
+        installed version of pycryptodome: {}.
 
         '''.format(', '.join(oddhash.algorithms()))
         )
     )
     parser.add_argument(
         '--salt',
-        type=oddhash.toBytes,
+        type=A.toBytes,
         metavar="S",
         help='If needed, specify a salt value: $s'
     )
     parser.add_argument(
         '--message',
-        type=oddhash.toBytes,
+        type=A.toBytes,
         metavar="M",
         help='If needed, specify a message value: $m'
     )
@@ -120,7 +122,7 @@ def main():
         'hashes',
         metavar='HASH',
         nargs='+',
-        type=lambda x: binascii.hexlify(oddhash.toBytes(x, 'hex')),
+        type=lambda x: binascii.hexlify(A.toBytes(x, 'hex')),
         help=textwrap.dedent('''
 
         List of base16 (i.e. hex) hashes to attempt to crack. Caution,

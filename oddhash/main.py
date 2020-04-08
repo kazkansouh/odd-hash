@@ -1,6 +1,20 @@
-#! /usr/bin/env python3
+# Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import oddhash
+import oddhash.args as A
 import sys
 import argparse
 import textwrap
@@ -27,11 +41,12 @@ def main():
     Parameters such as salt and message can be specified with a prefix
     of: {}.
 
-    '''.format(', '.join(oddhash.codings()))),
+    '''.format(', '.join(A.codings()))),
     epilog='''
     {} v{}.
     Copyright (C) 2020 Karim Kanso. All Rights Reserved.
-    '''.format(oddhash.name, oddhash.version)
+    '''.format(oddhash.name, oddhash.version),
+    formatter_class=A.OddHashHelpFormatter,
     )
     parser.add_argument(
         'format',
@@ -56,25 +71,25 @@ def main():
         based algorithms (e.g. sha3, keccak, blake2b).
 
         The following is a list of hash functions available from the
-        installed version of pycryptodome: {}
+        installed version of pycryptodome: {}.
 
         '''.format(', '.join(oddhash.algorithms())))
     )
     parser.add_argument(
         '--salt',
-        type=oddhash.toBytes,
+        type=A.toBytes,
         metavar="S",
         help='If needed, specify a salt value: $s'
     )
     parser.add_argument(
         '--message',
-        type=oddhash.toBytes,
+        type=A.toBytes,
         metavar="M",
         help='If needed, specify a message value: $m'
     )
     parser.add_argument(
         'password',
-        type=oddhash.toBytes,
+        type=A.toBytes,
         help='The password to hash'
     )
     parser.add_argument(
