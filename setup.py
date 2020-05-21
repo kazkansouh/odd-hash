@@ -48,4 +48,8 @@ setuptools.setup(
             "odd-crack = oddhash.crack:main",
         ]
     },
+    install_requires=[
+        'lark-parser',
+        'pycryptodome',
+    ],
 )
