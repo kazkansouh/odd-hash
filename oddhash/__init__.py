@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 name = "oddhash"
-version = "0.0.4"
+version = "0.0.5"
 
 from lark import Lark, Transformer
 import Crypto.Hash
