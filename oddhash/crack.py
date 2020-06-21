@@ -21,6 +21,7 @@ import textwrap
 import binascii
 import concurrent.futures
 import signal
+import re
 
 # used child by processes, needs to be global
 def checkHash(password):
@@ -29,10 +30,20 @@ def checkHash(password):
     try:
         result = hasher(password)
         for h in args.hashes:
-            if h == result:
-                return h
+            if type(h) == re.Pattern:
+                if h.search(result.decode('utf8')):
+                    return result
+            else:
+                if h == result:
+                    return h
     except KeyboardInterrupt:
         pass
+
+def parseHash(param):
+    if param.startswith('regex:'):
+        return re.compile(param[6:])
+    else:
+        return binascii.hexlify(A.toBytes(param, 'hex'))
 
 def main():
     global hasher
@@ -122,14 +133,20 @@ def main():
         'hashes',
         metavar='HASH',
         nargs='+',
-        type=lambda x: binascii.hexlify(A.toBytes(x, 'hex')),
+        type=parseHash,
         help=textwrap.dedent('''
 
         List of base16 (i.e. hex) hashes to attempt to crack. Caution,
-        no validation is performed on the length.
+        no validation is performed on the length. Supports "base64:"
+        prefix.
 
         If a hash begins with "@" then it will be treated as a file
         and hashes read from it.
+
+        If a hash starts with "regex:" then it is used to match
+        against computed hashes. All comparisons are done in lowercase
+        hex. E.g. "regex:^0e\d+$" to find a hash vulnerable to php
+        type juggling.
 
         ''')
     )

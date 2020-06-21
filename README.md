@@ -81,7 +81,7 @@ the `new` function. This has been left as future work to support.
 Two tools are provided:
 
 * `odd-hash` used for hashing a password [[usage](#odd-hash-usage)] [[examples](#odd-hash-examples)]
-* `odd-crack` used for dictionary attack against a hash [[usage](#odd-crack-usage)] [[examples](#odd-crack-examples)]
+* `odd-crack` used for dictionary attack against a hash (or regex) [[usage](#odd-crack-usage)] [[examples](#odd-crack-examples)]
 
 ### Install
 
@@ -252,6 +252,9 @@ positional arguments:
                If a hash begins with "@" then it will be treated as a file and
                hashes read from it.
 
+               If a hash starts with "regex:" then it is used to match against
+               computed hashes. All comparisons are done in lowercase hex. E.g.
+               "regex:^0e\d+$" to find a hash vulnerable to php type juggling.
 
 optional arguments:
   -h, --help   show this help message and exit
@@ -263,7 +266,7 @@ optional arguments:
   --debug      Increase verbosity of print messages
 
 
-  oddhash v0.0.3. Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+  oddhash v0.0.4. Copyright (C) 2020 Karim Kanso. All Rights Reserved.
 ```
 
 ### `odd-crack` examples
