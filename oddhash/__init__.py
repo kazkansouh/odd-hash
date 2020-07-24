@@ -30,7 +30,7 @@ function: algorithm [ "_" RAW ] "(" concat ")"
 
 algorithm: [ HMAC "_" ] ALG_NAME [ "_" DIGEST_SIZE ]
 
-?concat:  param ("." param)?
+?concat:  param ("." concat)?
 
 ?param: function
       | SALT
