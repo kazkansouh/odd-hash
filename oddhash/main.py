@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+# Copyright (C) 2021 Karim Kanso. All Rights Reserved.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ def main():
     '''.format(', '.join(A.codings()))),
     epilog='''
     {} v{}.
-    Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+    Copyright (C) 2021 Karim Kanso. All Rights Reserved.
     '''.format(oddhash.name, oddhash.version),
     formatter_class=A.OddHashHelpFormatter,
     )
@@ -97,6 +97,11 @@ def main():
         action='store_true',
         help='Increase verbosity of print messages'
     )
+    parser.add_argument(
+        '--raw',
+        action='store_true',
+        help='Dont try and convert hash to utf8 before printing.'
+    )
 
     args = parser.parse_args()
     oddhash.debug = args.debug
@@ -125,11 +130,13 @@ def main():
         return
 
     hash = func(args.password)
-    try:
-        print(hash.decode('utf-8'))
-    except UnicodeError:
-        print('[!] raw hash: {}'.format(hash))
-    return
+    if not args.raw:
+        try:
+            print(hash.decode('utf-8'))
+            return
+        except UnicodeError:
+            pass
+    print('[!] raw hash: {}'.format(hash))
 
 if __name__ == '__main__':
     main()

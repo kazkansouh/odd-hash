@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+# Copyright (C) 2021 Karim Kanso. All Rights Reserved.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ def main():
     '''.format(', '.join(A.codings()))),
     epilog='''
     {} v{}.
-    Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+    Copyright (C) 2021 Karim Kanso. All Rights Reserved.
     '''.format(oddhash.name, oddhash.version),
     fromfile_prefix_chars='@',
     formatter_class=A.OddHashHelpFormatter,

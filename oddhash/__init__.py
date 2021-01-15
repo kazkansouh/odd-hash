@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Karim Kanso. All Rights Reserved.
+# Copyright (C) 2021 Karim Kanso. All Rights Reserved.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,17 +20,18 @@ from lark import Lark, Transformer
 import Crypto.Hash
 import Crypto.Hash.HMAC
 import pkgutil
+import binascii
 
 debug = False
 
 __grammar = '''
-?start: function
+?start: binop
 
-function: algorithm [ "_" RAW ] "(" concat ")"
+function: algorithm [ "_" RAW ] "(" binop ")"
 
 algorithm: [ HMAC "_" ] ALG_NAME [ "_" DIGEST_SIZE ]
 
-?concat:  param ("." concat)?
+?binop:  param (OPERATOR binop)?
 
 ?param: function
       | SALT
@@ -45,6 +46,7 @@ HMAC: "hmac"
 RAW: "raw"
 DIGEST_SIZE: ("0".."9")+
 ALG_NAME: ("a".."z"|"A".."Z"|"0".."9")+
+OPERATOR: "."|"+"
 WHITESPACE: " "+
 %ignore WHITESPACE
 '''
@@ -78,6 +80,17 @@ class AlgorithmTestError(OddHashError):
         return 'self test of algorithm "{}" failed with error: {}'.format(
             self.name, self.err)
 
+class Hexlify:
+    "wrapper class to expose hex as a digester"
+    def __init__(self, data):
+        self.data = binascii.hexlify(data)
+
+    def digest(self):
+        return self.data
+
+    def hexdigest(self):
+        return self.data.decode('utf8')
+
 def algorithms():
     "return a list of hash modules provided by Crypto.Hash"
     return [
@@ -85,6 +98,21 @@ def algorithms():
         for m in pkgutil.iter_modules(Crypto.Hash.__path__)
         if m.name[0] != '_'
     ]
+
+
+def bitwise_operation_aux(xs, ys, f):
+    if len(xs) == len(ys):
+        return bytes([f(x,y) for x, y in zip(xs, ys)])
+    raise ValueError(
+        (
+            'bitwise operation with unequal length byte strings '
+            'len({})={} and len({})={}'
+        ).format(xs, len(xs), ys, len(ys))
+    )
+
+def bitwise_operation(f):
+    "need to consider padding unequal length byte strings"
+    return lambda xs, ys, f=f: bitwise_operation_aux(xs, ys, f)
 
 class HashBuilder(Transformer):
     """Traverses the parse tree and builds/compiles a hash function that
@@ -155,15 +183,24 @@ compilation.
             raise ValueError('message required but not specified')
         return self.message
 
-    def concat(self, items):
-        a1, a2 = items
+    def OPERATOR(self, item):
+        if item[0] == '.':
+            # concatenation
+            return lambda a, b: a + b
+        if item[0] == '+':
+            # bitwise xor
+            return bitwise_operation((lambda a, b: a ^ b))
+        raise ValueError('operator {} not implemented'.format(item))
+
+    def binop(self, items):
+        a1, op, a2 = items
         if type(a1) == bytes and type(a2) == bytes:
-            return a1 + a2
+            return op(a1, a2)
         if type(a1) == bytes:
-            return lambda pwd, a1=a1, a2=a2: a1 + a2(pwd)
+            return lambda pwd, a1=a1, a2=a2, op=op: op(a1, a2(pwd))
         if type(a2) == bytes:
-            return lambda pwd, a1=a1, a2=a2: a1(pwd) + a2
-        return lambda pwd, a1=a1, a2=a2: a1(pwd) + a2(pwd)
+            return lambda pwd, a1=a1, a2=a2, op=op: op(a1(pwd), a2)
+        return lambda pwd, a1=a1, a2=a2, op=op: op(a1(pwd), a2(pwd))
 
 
     def algorithm(self, items):
@@ -174,6 +211,10 @@ compilation.
            hmac = True
            if debug:
                print("[*] using hmac")
+        if name == "hex":
+            if debug:
+                print("[*] using hex")
+            return lambda data, pwd: Hexlify(data)
 
         if debug:
             print("[*] looking up: {}".format(name))
